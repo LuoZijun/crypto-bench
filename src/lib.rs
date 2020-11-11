@@ -19,3 +19,4 @@ mod Ring;
 mod OpenSSL;
 mod RustCrypto;
 mod Crypto;
+mod Sodium;
