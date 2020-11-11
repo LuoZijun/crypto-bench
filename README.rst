@@ -31,6 +31,7 @@ X86 以及 X86_64 平台
 -----------------------------
 
 .. code:: bash
+    
     env RUSTFLAGS="-C target-cpu=native -C target-feature=+aes,+pclmul,+sse,+sse2,+sse3,+ssse3,+sse4.1,+sse4.2,+avx,+avx2" cargo bench
 
 
@@ -39,6 +40,7 @@ AArch64 平台
 --------------------
 
 .. code:: bash
+
     env RUSTFLAGS="-C target-cpu=native -C target-feature=+crypto,+neon,+aes,+pmull,+sha1,+sha2" cargo bench
 
 
