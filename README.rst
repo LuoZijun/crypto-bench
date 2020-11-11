@@ -41,6 +41,6 @@ AArch64 平台
 
 .. code:: bash
 
-    env RUSTFLAGS="-C target-cpu=native -C target-feature=+crypto,+neon,+aes,+pmull,+sha1,+sha2" cargo bench
+    env RUSTFLAGS="-C target-cpu=native -C target-feature=+crypto,+neon,+aes" cargo bench
 
 
