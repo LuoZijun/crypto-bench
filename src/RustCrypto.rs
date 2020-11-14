@@ -1,5 +1,4 @@
-#[allow(unused_imports)]
-use aes::{Aes128, Aes192, Aes256};
+use aes::{Aes128, Aes256};
 use aes::cipher::{ NewBlockCipher, BlockCipher, NewStreamCipher, StreamCipher };
 use aes::cipher::generic_array::GenericArray;
 use aes_gcm::AesGcm;
@@ -12,6 +11,7 @@ use chacha20poly1305::ChaCha20Poly1305;
 
 
 type Aes128Gcm    = AesGcm<Aes128, U12>;
+type Aes256Gcm    = AesGcm<Aes256, U12>;
 type Aes128Ccm    = Ccm<Aes128, U16, U12>; // AEAD_AES_128_CCM  NONCE-LEN=12, TAG-LEN=16, Q=3
 type Aes128GcmSiv = AesGcmSiv<Aes128>;
 
@@ -25,11 +25,10 @@ type ChaCha20Poly1305Nonce = GenericArray<u8, U12>;
 fn aes_128(b: &mut test::Bencher) {
     let key = [
         0x1c, 0x92, 0x40, 0xa5, 0xeb, 0x55, 0xd3, 0x8a, 
-        0xf3, 0x33, 0x88, 0x86, 0x04, 0xf6, 0xb5, 0xf0,
+        0xf3, 0x33, 0x88, 0x86, 0x04, 0xf6, 0xb5, 0xf0, 
     ];
 
-    let key   = GenericArray::from(key);
-
+    let key    = GenericArray::from(key);
     let cipher = Aes128::new(&key);
 
     b.bytes = 16;
@@ -43,6 +42,28 @@ fn aes_128(b: &mut test::Bencher) {
     })
 }
 
+#[bench]
+fn aes_256(b: &mut test::Bencher) {
+    let key = [
+        0x1c, 0x92, 0x40, 0xa5, 0xeb, 0x55, 0xd3, 0x8a, 
+        0xf3, 0x33, 0x88, 0x86, 0x04, 0xf6, 0xb5, 0xf0, 
+        0x1c, 0x92, 0x40, 0xa5, 0xeb, 0x55, 0xd3, 0x8a, 
+        0xf3, 0x33, 0x88, 0x86, 0x04, 0xf6, 0xb5, 0xf0,
+    ];
+
+    let key    = GenericArray::from(key);
+    let cipher = Aes256::new(&key);
+
+    b.bytes = 16;
+    b.iter(|| {
+        let mut ciphertext = test::black_box(GenericArray::from([
+            0x1c, 0x92, 0x40, 0xa5, 0xeb, 0x55, 0xd3, 0x8a, 
+            0xf3, 0x33, 0x88, 0x86, 0x04, 0xf6, 0xb5, 0xf0, 
+        ]));
+        cipher.encrypt_block(&mut ciphertext);
+        ciphertext
+    })
+}
 
 #[bench]
 fn aes_128_gcm(b: &mut test::Bencher) {
@@ -61,6 +82,35 @@ fn aes_128_gcm(b: &mut test::Bencher) {
 
     let cipher = Aes128Gcm::new(&key);
 
+    b.bytes = 16;
+    b.iter(|| {
+        let mut ciphertext = test::black_box([
+            0x1c, 0x92, 0x40, 0xa5, 0xeb, 0x55, 0xd3, 0x8a, 
+            0xf3, 0x33, 0x88, 0x86, 0x04, 0xf6, 0xb5, 0xf0, 
+        ]);
+        let tag = cipher.encrypt_in_place_detached(&nonce, &aad, &mut ciphertext).unwrap();
+        tag
+    })
+}
+
+#[bench]
+fn aes_256_gcm(b: &mut test::Bencher) {
+    let key = [
+        0x1c, 0x92, 0x40, 0xa5, 0xeb, 0x55, 0xd3, 0x8a, 
+        0xf3, 0x33, 0x88, 0x86, 0x04, 0xf6, 0xb5, 0xf0, 
+        0x1c, 0x92, 0x40, 0xa5, 0xeb, 0x55, 0xd3, 0x8a, 
+        0xf3, 0x33, 0x88, 0x86, 0x04, 0xf6, 0xb5, 0xf0, 
+    ];
+    let nonce = [
+        0x00, 0x00, 0x00, 0x00, 0x01, 0x02, 0x03, 0x04, 
+        0x05, 0x06, 0x07, 0x08,
+    ];
+    let aad = [0u8; 0];
+
+    let key    = GenericArray::from(key);
+    let nonce  = GenericArray::from(nonce);
+    let cipher = Aes256Gcm::new(&key);
+    
     b.bytes = 16;
     b.iter(|| {
         let mut ciphertext = test::black_box([
