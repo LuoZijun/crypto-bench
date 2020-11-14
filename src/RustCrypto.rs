@@ -6,7 +6,7 @@ use aes_gcm::AesGcm;
 use ccm::{Ccm, consts::{U12, U16, U32}};
 use aes_gcm::aead::{NewAead, AeadInPlace};
 use aes_gcm_siv::AesGcmSiv;
-use aes_siv::{SivAead, Aes128SivAead};
+use aes_siv::Aes128SivAead;
 use chacha20::ChaCha20;
 use chacha20poly1305::ChaCha20Poly1305;
 
