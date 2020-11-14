@@ -1,8 +1,15 @@
+use crypto::blockcipher::Aes128;
+use crypto::aeadcipher::Aes128Gcm;
+use crypto::aeadcipher::Aes128Ccm;
+use crypto::aeadcipher::Aes128OcbTag128;
+use crypto::aeadcipher::Aes128GcmSiv;
+use crypto::aeadcipher::AesSivCmac256;
+use crypto::streamcipher::Chacha20;
+use crypto::aeadcipher::Chacha20Poly1305;
+
 
 #[bench]
 fn aes_128(b: &mut test::Bencher) {
-    use crypto::blockcipher::Aes128;
-
     let key = [
         0x1c, 0x92, 0x40, 0xa5, 0xeb, 0x55, 0xd3, 0x8a, 
         0xf3, 0x33, 0x88, 0x86, 0x04, 0xf6, 0xb5, 0xf0,
@@ -23,8 +30,6 @@ fn aes_128(b: &mut test::Bencher) {
 
 #[bench]
 fn aes_128_gcm(b: &mut test::Bencher) {
-    use crypto::aeadcipher::Aes128Gcm;
-
     let key = [
         0x1c, 0x92, 0x40, 0xa5, 0xeb, 0x55, 0xd3, 0x8a, 
         0xf3, 0x33, 0x88, 0x86, 0x04, 0xf6, 0xb5, 0xf0,
@@ -55,8 +60,6 @@ fn aes_128_gcm(b: &mut test::Bencher) {
 
 #[bench]
 fn aes_128_ccm(b: &mut test::Bencher) {
-    use crypto::aeadcipher::Aes128Ccm;
-
     let key = [
         0x1c, 0x92, 0x40, 0xa5, 0xeb, 0x55, 0xd3, 0x8a, 
         0xf3, 0x33, 0x88, 0x86, 0x04, 0xf6, 0xb5, 0xf0,
@@ -87,8 +90,6 @@ fn aes_128_ccm(b: &mut test::Bencher) {
 
 #[bench]
 fn aes_128_ocb_tag_128(b: &mut test::Bencher) {
-    use crypto::aeadcipher::Aes128OcbTag128;
-
     let key = [
         0x1c, 0x92, 0x40, 0xa5, 0xeb, 0x55, 0xd3, 0x8a, 
         0xf3, 0x33, 0x88, 0x86, 0x04, 0xf6, 0xb5, 0xf0,
@@ -119,8 +120,6 @@ fn aes_128_ocb_tag_128(b: &mut test::Bencher) {
 
 #[bench]
 fn aes_128_gcm_siv(b: &mut test::Bencher) {
-    use crypto::aeadcipher::Aes128GcmSiv;
-
     let key = [
         0x1c, 0x92, 0x40, 0xa5, 0xeb, 0x55, 0xd3, 0x8a, 
         0xf3, 0x33, 0x88, 0x86, 0x04, 0xf6, 0xb5, 0xf0,
@@ -151,8 +150,6 @@ fn aes_128_gcm_siv(b: &mut test::Bencher) {
 
 #[bench]
 fn aes_128_siv_cmac_256(b: &mut test::Bencher) {
-    use crypto::aeadcipher::AesSivCmac256;
-
     let key = [
         0x1c, 0x92, 0x40, 0xa5, 0xeb, 0x55, 0xd3, 0x8a, 
         0xf3, 0x33, 0x88, 0x86, 0x04, 0xf6, 0xb5, 0xf0,
@@ -181,8 +178,6 @@ fn aes_128_siv_cmac_256(b: &mut test::Bencher) {
 
 #[bench]
 fn chacha20(b: &mut test::Bencher) {
-    use crypto::streamcipher::Chacha20;
-
     let key = [
         0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 
         0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 
@@ -216,8 +211,6 @@ fn chacha20(b: &mut test::Bencher) {
 
 #[bench]
 fn chacha20_poly1305(b: &mut test::Bencher) {
-    use crypto::aeadcipher::Chacha20Poly1305;
-
     let key = [
         0x1c, 0x92, 0x40, 0xa5, 0xeb, 0x55, 0xd3, 0x8a, 
         0xf3, 0x33, 0x88, 0x86, 0x04, 0xf6, 0xb5, 0xf0,
