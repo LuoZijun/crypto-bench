@@ -6,6 +6,11 @@ edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[workspace]
+members = [
+    "./aes", 
+]
+
 [dependencies]
 ring    = "0.16"
 openssl = "0.10"
@@ -16,5 +21,10 @@ crypto        = { git = "https://github.com/shadowsocks/crypto.git" }
 aes              = "0.6"
 aes-gcm          = "0.8"
 ccm              = "0.3"
+aes-gcm-siv      = "0.9"
+aes-siv          = "0.5"
 chacha20         = "0.6"
 chacha20poly1305 = "0.7"
+
+[patch.crates-io]
+aes = { path = './aes' }

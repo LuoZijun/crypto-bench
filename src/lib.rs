@@ -9,8 +9,11 @@ extern crate crypto;
 extern crate aes;
 extern crate aes_gcm;
 extern crate ccm;
+extern crate aes_gcm_siv;
+extern crate aes_siv;
 extern crate chacha20;
 extern crate chacha20poly1305;
+
 
 #[cfg(test)]
 extern crate test;
