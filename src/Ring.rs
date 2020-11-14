@@ -1,6 +1,6 @@
 use ring::aead::{
     // quic::AES_128, quic::CHACHA20, 
-    AES_128_GCM, CHACHA20_POLY1305,
+    AES_128_GCM, AES_256_GCM, CHACHA20_POLY1305,
     SealingKey, UnboundKey, BoundKey, NonceSequence,
     Nonce, Aad,
 };
@@ -28,6 +28,30 @@ fn aes_128_gcm(b: &mut test::Bencher) {
     let key = UnboundKey::new(&AES_128_GCM, &key).unwrap();
     let mut cipher = SealingKey::new(key, EmptyNonce);
 
+    b.bytes = 16;
+    b.iter(|| {
+        let mut ciphertext = test::black_box([
+            0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 
+            0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff,
+        ]);
+        let _tag = cipher.seal_in_place_separate_tag(Aad::empty(), &mut ciphertext).unwrap();
+
+        ciphertext
+    })
+}
+
+#[bench]
+fn aes_256_gcm(b: &mut test::Bencher) {
+    let key = [
+        0x1c, 0x92, 0x40, 0xa5, 0xeb, 0x55, 0xd3, 0x8a, 
+        0xf3, 0x33, 0x88, 0x86, 0x04, 0xf6, 0xb5, 0xf0, 
+        0x1c, 0x92, 0x40, 0xa5, 0xeb, 0x55, 0xd3, 0x8a, 
+        0xf3, 0x33, 0x88, 0x86, 0x04, 0xf6, 0xb5, 0xf0, 
+    ];
+    
+    let key = UnboundKey::new(&AES_256_GCM, &key).unwrap();
+    let mut cipher = SealingKey::new(key, EmptyNonce);
+    
     b.bytes = 16;
     b.iter(|| {
         let mut ciphertext = test::black_box([
