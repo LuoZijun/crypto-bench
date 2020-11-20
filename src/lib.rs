@@ -4,7 +4,7 @@
 extern crate ring;
 extern crate openssl;
 extern crate libsodium_sys;
-extern crate crypto;
+extern crate crypto2;
 // RustCrypto
 extern crate aes;
 extern crate aes_gcm;
