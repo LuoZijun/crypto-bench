@@ -1,13 +1,13 @@
-use crypto::blockcipher::Aes128;
-use crypto::blockcipher::Aes256;
-use crypto::aeadcipher::Aes128Gcm;
-use crypto::aeadcipher::Aes256Gcm;
-use crypto::aeadcipher::Aes128Ccm;
-use crypto::aeadcipher::Aes128OcbTag128;
-use crypto::aeadcipher::Aes128GcmSiv;
-use crypto::aeadcipher::AesSivCmac256;
-use crypto::streamcipher::Chacha20;
-use crypto::aeadcipher::Chacha20Poly1305;
+use crypto2::blockcipher::Aes128;
+use crypto2::blockcipher::Aes256;
+use crypto2::aeadcipher::Aes128Gcm;
+use crypto2::aeadcipher::Aes256Gcm;
+use crypto2::aeadcipher::Aes128Ccm;
+use crypto2::aeadcipher::Aes128OcbTag128;
+use crypto2::aeadcipher::Aes128GcmSiv;
+use crypto2::aeadcipher::AesSivCmac256;
+use crypto2::streamcipher::Chacha20;
+use crypto2::aeadcipher::Chacha20Poly1305;
 
 
 #[bench]

@@ -15,7 +15,7 @@ members = [
 ring    = "0.16"
 openssl = "0.10"
 libsodium-sys = "0.2"
-crypto        = { git = "https://github.com/shadowsocks/crypto.git" }
+crypto2       = "0.1"
 
 # RustCrypto
 aes              = "0.6"

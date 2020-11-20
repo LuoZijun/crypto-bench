@@ -21,5 +21,5 @@ extern crate test;
 mod Ring;
 mod OpenSSL;
 mod RustCrypto;
-mod Crypto;
+mod Crypto2;
 mod Sodium;
