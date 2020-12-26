@@ -1,8 +1,10 @@
+use openssl_sys::{ AES_KEY, AES_set_encrypt_key, };
 use openssl::symm::Mode;
 use openssl::symm::Cipher;
 use openssl::symm::Crypter;
 use openssl::symm::encrypt;
 use openssl::symm::encrypt_aead;
+
 
 use std::sync::Once;
 
@@ -16,9 +18,71 @@ fn openssl_init() {
     });
 }
 
+#[allow(dead_code)]
+extern "C" {
+    pub fn AES_encrypt(input: *const u8, output: *mut u8, key: *const AES_KEY);
+    pub fn AES_decrypt(input: *const u8, output: *mut u8, key: *const AES_KEY);
+}
+
+pub struct Aes128 {
+    inner: AES_KEY,
+}
+
+impl Aes128 {
+    pub const KEY_LEN: usize   = 16;
+    pub const BLOCK_LEN: usize = 16;
+
+
+    pub fn new(key: &[u8]) -> Self {
+        unsafe {
+            let bits = Self::KEY_LEN * 8;
+            let key = key.as_ptr() as *const _;
+            let mut inner: AES_KEY = std::mem::zeroed();
+
+            let ret = AES_set_encrypt_key(key, bits as i32, &mut inner);
+            assert_eq!(ret, 0);
+
+            Self { inner }
+        }
+    }
+
+    pub fn encrypt(&self, block: &mut [u8]) {
+        unsafe {
+            AES_encrypt(block.as_ptr(), block.as_mut_ptr(), &self.inner);
+        }
+    }
+}
+
+// https://github.com/openssl/openssl/blob/master/demos/evp/aesccm.c
+// pub struct Aes128Ccm {
+//     inner: AES_KEY,
+// }
+
 
 #[bench]
 fn aes_128(b: &mut test::Bencher) {
+    openssl_init();
+
+    let key = [
+        0x1c, 0x92, 0x40, 0xa5, 0xeb, 0x55, 0xd3, 0x8a, 
+        0xf3, 0x33, 0x88, 0x86, 0x04, 0xf6, 0xb5, 0xf0, 
+    ];
+
+    let cipher = Aes128::new(&key);
+
+    b.bytes = Aes128::BLOCK_LEN as u64;
+    b.iter(|| {
+        let mut ciphertext = test::black_box([
+            0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 
+            0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff, 
+        ]);
+        cipher.encrypt(&mut ciphertext);
+        ciphertext
+    })
+}
+
+#[bench]
+fn evp_aes_128(b: &mut test::Bencher) {
     openssl_init();
 
     let key = [
@@ -48,7 +112,37 @@ fn aes_128(b: &mut test::Bencher) {
 }
 
 #[bench]
-fn aes_128_gcm(b: &mut test::Bencher) {
+fn evp_aes_256(b: &mut test::Bencher) {
+    openssl_init();
+
+    let key = [
+        0x1c, 0x92, 0x40, 0xa5, 0xeb, 0x55, 0xd3, 0x8a, 
+        0xf3, 0x33, 0x88, 0x86, 0x04, 0xf6, 0xb5, 0xf0, 
+        0x1c, 0x92, 0x40, 0xa5, 0xeb, 0x55, 0xd3, 0x8a, 
+        0xf3, 0x33, 0x88, 0x86, 0x04, 0xf6, 0xb5, 0xf0, 
+    ];
+
+    let mut cipher = Crypter::new(Cipher::aes_256_ecb(), Mode::Encrypt, &key, None).unwrap();
+
+    b.bytes = 16;
+    b.iter(|| {
+        let plaintext = test::black_box([
+            0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 
+            0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff,
+        ]);
+        let mut ciphertext = test::black_box([
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
+        ]);
+        let _amt = cipher.update(&plaintext, &mut ciphertext).unwrap();
+        ciphertext
+    })
+}
+
+#[bench]
+fn evp_aes_128_gcm(b: &mut test::Bencher) {
     openssl_init();
 
     let key = [
@@ -65,7 +159,7 @@ fn aes_128_gcm(b: &mut test::Bencher) {
 
     b.bytes = 16;
     b.iter(|| {
-        let mut tag_out    = test::black_box([ 1u8; 16 ]);
+        let mut tag_out = test::black_box([ 1u8; 16 ]);
         let plaintext = test::black_box([
             0x1c, 0x92, 0x40, 0xa5, 0xeb, 0x55, 0xd3, 0x8a, 
             0xf3, 0x33, 0x88, 0x86, 0x04, 0xf6, 0xb5, 0xf0, 
@@ -75,8 +169,40 @@ fn aes_128_gcm(b: &mut test::Bencher) {
         tag_out
     })
 }
+
+#[bench]
+fn evp_aes_256_gcm(b: &mut test::Bencher) {
+    openssl_init();
+
+    let key = [
+        0x1c, 0x92, 0x40, 0xa5, 0xeb, 0x55, 0xd3, 0x8a, 
+        0xf3, 0x33, 0x88, 0x86, 0x04, 0xf6, 0xb5, 0xf0, 
+        0x1c, 0x92, 0x40, 0xa5, 0xeb, 0x55, 0xd3, 0x8a, 
+        0xf3, 0x33, 0x88, 0x86, 0x04, 0xf6, 0xb5, 0xf0, 
+    ];
+    let nonce = [
+        0x00, 0x00, 0x00, 0x00, 0x01, 0x02, 0x03, 0x04, 
+        0x05, 0x06, 0x07, 0x08,
+    ];
+    let aad = [0u8; 0];
+
+    let t = Cipher::aes_256_gcm();
+
+    b.bytes = 16;
+    b.iter(|| {
+        let mut tag_out = test::black_box([ 1u8; 16 ]);
+        let plaintext = test::black_box([
+            0x1c, 0x92, 0x40, 0xa5, 0xeb, 0x55, 0xd3, 0x8a, 
+            0xf3, 0x33, 0x88, 0x86, 0x04, 0xf6, 0xb5, 0xf0, 
+        ]);
+        let _ciphertext = encrypt_aead(t, &key, Some(&nonce), &aad, &plaintext, &mut tag_out).unwrap();
+
+        tag_out
+    })
+}
+
 // #[bench]
-// fn aes_128_ccm(b: &mut test::Bencher) {
+// fn evp_aes_128_ccm(b: &mut test::Bencher) {
 //     let key = [
 //         0x1c, 0x92, 0x40, 0xa5, 0xeb, 0x55, 0xd3, 0x8a, 
 //         0xf3, 0x33, 0x88, 0x86, 0x04, 0xf6, 0xb5, 0xf0,
@@ -91,18 +217,23 @@ fn aes_128_gcm(b: &mut test::Bencher) {
 
 //     b.bytes = 16;
 //     b.iter(|| {
-//         let mut tag_out    = test::black_box([ 1u8; 16 ]);
+//         let mut tag_out = test::black_box([ 1u8; 16 ]);
 //         let plaintext = test::black_box([
 //             0x1c, 0x92, 0x40, 0xa5, 0xeb, 0x55, 0xd3, 0x8a, 
 //             0xf3, 0x33, 0x88, 0x86, 0x04, 0xf6, 0xb5, 0xf0, 
+//             // 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
+//             // 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
 //         ]);
-//         let _ciphertext = encrypt_aead(t, &key, Some(&nonce), &aad, &plaintext, &mut tag_out).unwrap();
+//         let _ciphertext = encrypt_aead(t, &key, Some(&nonce), &aad, &plaintext, &mut tag_out);
+//         println!("{:?}", _ciphertext);
+//         assert_eq!(_ciphertext.is_ok(), true);
 
 //         tag_out
 //     })
 // }
+
 #[bench]
-fn aes_128_ocb(b: &mut test::Bencher) {
+fn evp_aes_128_ocb(b: &mut test::Bencher) {
     openssl_init();
 
     let key = [
@@ -119,7 +250,7 @@ fn aes_128_ocb(b: &mut test::Bencher) {
 
     b.bytes = 16;
     b.iter(|| {
-        let mut tag_out    = test::black_box([ 1u8; 16 ]);
+        let mut tag_out = test::black_box([ 1u8; 16 ]);
         let plaintext = test::black_box([
             0x1c, 0x92, 0x40, 0xa5, 0xeb, 0x55, 0xd3, 0x8a, 
             0xf3, 0x33, 0x88, 0x86, 0x04, 0xf6, 0xb5, 0xf0, 
@@ -132,7 +263,7 @@ fn aes_128_ocb(b: &mut test::Bencher) {
 
 
 #[bench]
-fn chacha20(b: &mut test::Bencher) {
+fn evp_chacha20(b: &mut test::Bencher) {
     openssl_init();
 
     let key = [
@@ -143,7 +274,8 @@ fn chacha20(b: &mut test::Bencher) {
     ];
     let nonce = [
         0x00, 0x00, 0x00, 0x00, 0x01, 0x02, 0x03, 0x04, 
-        0x05, 0x06, 0x07, 0x08,
+        0x05, 0x06, 0x07, 0x08,                         //   Nonce: 12 bytes
+                                0x00, 0x00, 0x00, 0x00, // Counter:  4 bytes
     ];
 
     let t = Cipher::chacha20();
@@ -167,7 +299,7 @@ fn chacha20(b: &mut test::Bencher) {
 }
 
 #[bench]
-fn chacha20_poly1305(b: &mut test::Bencher) {
+fn evp_chacha20_poly1305(b: &mut test::Bencher) {
     openssl_init();
 
     let key = [
@@ -186,7 +318,7 @@ fn chacha20_poly1305(b: &mut test::Bencher) {
 
     b.bytes = 64;
     b.iter(|| {
-        let mut tag_out    = test::black_box([ 1u8; 16 ]);
+        let mut tag_out = test::black_box([ 1u8; 16 ]);
         let plaintext = test::black_box([
             0x1c, 0x92, 0x40, 0xa5, 0xeb, 0x55, 0xd3, 0x8a, 
             0xf3, 0x33, 0x88, 0x86, 0x04, 0xf6, 0xb5, 0xf0,
