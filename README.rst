@@ -24,11 +24,11 @@ Bench
     
     git clone https://github.com/LuoZijun/crypto-bench
     cd crypto-bench
-
+    
     # macOS
-    env OPENSSL_LIB_DIR /usr/local/opt/openssl/lib \
-        SODIUM_LIB_DIR /usr/local/opt/libsodium/lib \
-        SODIUM_SHARED 1 \
+    env OPENSSL_LIB_DIR="/usr/local/opt/openssl/lib" \
+        SODIUM_LIB_DIR="/usr/local/opt/libsodium/lib" \
+        SODIUM_SHARED=1 \
         cargo bench
 
     # Other System
