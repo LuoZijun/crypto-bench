@@ -228,11 +228,11 @@ fn chacha20(b: &mut test::Bencher) {
 
     let key   = ChaCha20Key::from_slice(&key);
     let nonce = ChaCha20Nonce::from_slice(&nonce);
-
-    let mut cipher = ChaCha20::new(key, nonce);
-
+    
     b.bytes = 64;
     b.iter(|| {
+        let mut cipher = ChaCha20::new(key, nonce);
+
         let mut ciphertext = test::black_box([
             0x1c, 0x92, 0x40, 0xa5, 0xeb, 0x55, 0xd3, 0x8a, 
             0xf3, 0x33, 0x88, 0x86, 0x04, 0xf6, 0xb5, 0xf0,
