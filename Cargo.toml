@@ -16,7 +16,8 @@ ring        = "0.16"
 openssl     = "0.10"
 openssl-sys = "0.9"
 libsodium-sys = "0.2"
-crypto2       = "0.1"
+# crypto2       = "0.1"
+crypto2       = { git = "https://github.com/shadowsocks/crypto2", branch = "dev" }
 
 # RustCrypto
 aes              = "0.6"
