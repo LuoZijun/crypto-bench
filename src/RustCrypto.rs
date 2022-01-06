@@ -1,5 +1,5 @@
 use aes::{Aes128, Aes256};
-use aes::cipher::{ NewBlockCipher, BlockCipher, NewStreamCipher, StreamCipher };
+use aes::cipher::{NewBlockCipher, BlockEncrypt};
 use aes::cipher::generic_array::GenericArray;
 use aes_gcm::AesGcm;
 use ccm::{Ccm, consts::{U12, U16, U32}};
@@ -8,7 +8,7 @@ use aes_gcm_siv::AesGcmSiv;
 use aes_siv::Aes128SivAead;
 use chacha20::ChaCha20;
 use chacha20poly1305::ChaCha20Poly1305;
-
+use chacha20::cipher::{NewCipher, StreamCipher};
 
 type Aes128Gcm    = AesGcm<Aes128, U12>;
 type Aes256Gcm    = AesGcm<Aes256, U12>;
@@ -19,7 +19,6 @@ type ChaCha20Key           = GenericArray<u8, U32>;
 type ChaCha20Nonce         = GenericArray<u8, U12>;
 type ChaCha20Poly1305Key   = GenericArray<u8, U32>;
 type ChaCha20Poly1305Nonce = GenericArray<u8, U12>;
-
 
 #[bench]
 fn aes_128(b: &mut test::Bencher) {
@@ -240,10 +239,10 @@ fn chacha20(b: &mut test::Bencher) {
             0x9d, 0xca, 0x5c, 0xbc, 0x20, 0x70, 0x75, 0xc0,
             0x1c, 0x92, 0x40, 0xa5, 0xeb, 0x55, 0xd3, 0x8a, 
             0xf3, 0x33, 0x88, 0x86, 0x04, 0xf6, 0xb5, 0xf0,
-            0x47, 0x39, 0x17, 0xc1, 0x40, 0x2b, 0x80, 0x09, 
+            0x47, 0x39, 0x17, 0xc1, 0x40, 0x2b, 0x80, 0x09,
             0x9d, 0xca, 0x5c, 0xbc, 0x20, 0x70, 0x75, 0xc0,
         ]);
-        cipher.encrypt(&mut ciphertext);
+        cipher.apply_keystream(&mut ciphertext);
         ciphertext
     })
 }
